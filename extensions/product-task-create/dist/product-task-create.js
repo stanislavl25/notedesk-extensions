@@ -18439,6 +18439,9 @@
     }
   });
 
+  // extensions/product-task-create/src/ActionExtension.jsx
+  var import_react12 = __toESM(require_react());
+
   // node_modules/@remote-ui/rpc/build/esm/memory.mjs
   function isBasicObject(value) {
     if (value == null || typeof value !== "object")
@@ -19137,17 +19140,14 @@
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/extension.mjs
   var extension = createExtensionRegistrationFunction();
 
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/AdminBlock/AdminBlock.mjs
-  var AdminBlock = createRemoteComponent("AdminBlock");
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/AdminAction/AdminAction.mjs
+  var AdminAction = createRemoteComponent("AdminAction");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/BlockStack/BlockStack.mjs
   var BlockStack = createRemoteComponent("BlockStack");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Button/Button.mjs
   var Button = createRemoteComponent("Button");
-
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
-  var InlineStack = createRemoteComponent("InlineStack");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Text/Text.mjs
   var Text = createRemoteComponent("Text");
@@ -19449,8 +19449,10 @@
     }));
   }
 
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/AdminBlock/AdminBlock.mjs
-  var AdminBlock2 = createRemoteReactComponent(AdminBlock);
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/AdminAction/AdminAction.mjs
+  var AdminAction2 = createRemoteReactComponent(AdminAction, {
+    fragmentProps: ["primaryAction", "secondaryAction"]
+  });
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/BlockStack/BlockStack.mjs
   var BlockStack2 = createRemoteReactComponent(BlockStack);
@@ -19458,14 +19460,11 @@
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Button/Button.mjs
   var Button2 = createRemoteReactComponent(Button);
 
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
-  var InlineStack2 = createRemoteReactComponent(InlineStack);
-
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Text/Text.mjs
   var Text2 = createRemoteReactComponent(Text);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/hooks/api.mjs
-  var import_react12 = __toESM(require_react(), 1);
+  var import_react11 = __toESM(require_react(), 1);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/errors.mjs
   var AdminUIExtensionError = class extends Error {
@@ -19477,80 +19476,85 @@
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/hooks/api.mjs
   function useApi(_target) {
-    const api = (0, import_react12.useContext)(ExtensionApiContext);
+    const api = (0, import_react11.useContext)(ExtensionApiContext);
     if (api == null) {
       throw new AdminUIExtensionError("No extension api found.");
     }
     return api;
   }
 
-  // extensions/customer-tasks/src/BlockExtension.jsx
-  var import_react13 = __toESM(require_react());
+  // extensions/product-task-create/src/ActionExtension.jsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
-  var TARGET = "admin.customer-details.block.render";
-  var BlockExtension_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
+  var TARGET = "admin.product-details.action.render";
+  var ActionExtension_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
-    const { i18n, data } = useApi(TARGET);
-    const [tasks, setTasks] = (0, import_react13.useState)([]);
-    const [loading, setLoading] = (0, import_react13.useState)(true);
-    const truncateString = (string, length, suffix = "...") => {
-      if (!string) {
-        return null;
-      }
-      if ((string == null ? void 0 : string.length) <= length) {
-        return string;
-      } else {
-        return `${string == null ? void 0 : string.slice(0, length)}${suffix}`;
-      }
-    };
-    (0, import_react13.useEffect)(() => {
-      const fetchData = () => __async(this, null, function* () {
-        const customerId = data.selected[0].id.replace("gid://shopify/Customer/", "");
-        console.log(customerId);
-        const response = yield fetch(`https://notedesk-app--development.gadget.app/tasksByCustomerId?id=${customerId}`);
-        if (response.ok) {
-          const result = yield response.json();
-          setTasks(result.tasks.map((task) => __spreadProps(__spreadValues({}, task), {
-            actionPending: false
-          })));
-          setLoading(false);
-        }
-      });
-      fetchData();
-    }, []);
-    const handleCompleteTask = (id) => __async(this, null, function* () {
-      const updatedTasks = tasks.map((task) => {
-        if (task.id === id) {
-          return __spreadProps(__spreadValues({}, task), {
-            actionPending: true
+    const { i18n, close, data } = useApi(TARGET);
+    console.log({ data });
+    const [productTitle, setProductTitle] = (0, import_react12.useState)("");
+    const [productId, setProductId] = (0, import_react12.useState)("");
+    const [productImage, setProductImage] = (0, import_react12.useState)("");
+    (0, import_react12.useEffect)(() => {
+      (function getProductInfo() {
+        return __async(this, null, function* () {
+          const getProductQuery = {
+            query: `query Product($id: ID!) {
+          product(id: $id) {
+            id
+            title
+            featuredImage {
+              url
+            }
+          }
+        }`,
+            variables: { id: data.selected[0].id }
+          };
+          const res = yield fetch("shopify:admin/api/graphql.json", {
+            method: "POST",
+            body: JSON.stringify(getProductQuery)
           });
-        } else {
-          return task;
-        }
-      });
-      setTasks(updatedTasks);
-      const response = yield fetch(`https://notedesk-app--development.gadget.app/completeTask`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          id
-        })
-      });
-      const finalTasks = tasks.filter((task) => task.id != id);
-      setTasks(finalTasks);
-    });
+          if (!res.ok) {
+            console.error("Network error");
+          }
+          const productData = yield res.json();
+          setProductTitle(productData.data.product.title);
+          setProductId(productData.data.product.id);
+          setProductImage(productData.data.product.featuredImage.url);
+        });
+      })();
+    }, [data.selected]);
     return (
-      // The AdminBlock component provides an API for setting the title of the Block extension wrapper.
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(AdminBlock2, { title: "Tasks", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(BlockStack2, { children: !loading ? tasks.length ? tasks.map((task, index) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(InlineStack2, { gap: 200, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { gap: 100, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { children: task.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { children: truncateString(task.description, 30, "...") })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Button2, { onClick: () => handleCompleteTask(task.id), children: task.actionPending ? "Wait..." : "Complete" })
-      ] }, index)) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { children: "No task for this customer." }) : "Loading..." }) })
+      // The AdminAction component provides an API for setting the title and actions of the Action extension wrapper.
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        AdminAction2,
+        {
+          primaryAction: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+            Button2,
+            {
+              onPress: () => {
+                console.log("saving");
+                close();
+              },
+              to: `/apps/notedesk-2/newTask?productId=${productId ? productId.replace("gid://shopify/Product/", "") : null}&productTitle=${productTitle}&productImage=${encodeURI(productImage)}`,
+              children: "Create a Task"
+            }
+          ),
+          secondaryAction: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+            Button2,
+            {
+              onPress: () => {
+                console.log("closing");
+                close();
+              },
+              children: "Close"
+            }
+          ),
+          children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(BlockStack2, { children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Text2, { children: [
+            "Current product: ",
+            productTitle
+          ] }) })
+        }
+      )
     );
   }
 })();
-//# sourceMappingURL=customer-tasks.js.map
+//# sourceMappingURL=product-task-create.js.map

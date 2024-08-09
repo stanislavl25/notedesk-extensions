@@ -1,0 +1,4 @@
+{
+  "name": "customer-task-create",
+  "welcome": "Bienvenue dans l'extension {{TARGET}}!"
+}

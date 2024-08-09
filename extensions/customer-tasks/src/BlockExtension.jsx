@@ -18,6 +18,7 @@ function App() {
   // The useApi hook provides access to several useful APIs like i18n and data.
   const {i18n, data} = useApi(TARGET);
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const truncateString = (string, length, suffix = "...") => {
     if (!string) {
@@ -41,6 +42,7 @@ function App() {
           ...task,
           actionPending: false
         })))
+        setLoading(false)
       }
     }
 
@@ -79,7 +81,7 @@ function App() {
     <AdminBlock title="Tasks">
       <BlockStack>
         {
-          tasks.length ? tasks.map((task, index) => (
+          !loading ? (tasks.length ? tasks.map((task, index) => (
             <InlineStack key={index} gap={200}>
               <BlockStack gap={100}>
                 <Text>{ task.title }</Text>
@@ -87,7 +89,7 @@ function App() {
               </BlockStack>
               <Button onClick={() => handleCompleteTask(task.id)}>{task.actionPending ? "Wait..." : "Complete"}</Button>
             </InlineStack>
-          )) : <Text>No task for this customer.</Text>
+          )) : <Text>No task for this customer.</Text>) : "Loading..."
         }
       </BlockStack>
     </AdminBlock>
